@@ -21,7 +21,7 @@ const MAPBOX_ACCESS_TOKEN =
 
 const INITIAL_VIEW_STATE = {
   latitude: 40.0,
-  longitude: -98.0,
+  longitude: -115.0,
   zoom: 2.5,
   bearing: 0,
 };
@@ -57,59 +57,70 @@ const Panel = ({ data }) => {
   return (
     <Box>
       <Navbar />
-      <Typography variant="h6" mt={4} ml={11} sx={{ fontWeight: "700" }}>
-        Pollutant Reduction
-      </Typography>
-
-      <FormControl
-        variant="filled"
-        sx={{ top: "20px", ml: "5%", minWidth: 220, mb: "10px" }}
-      >
-        <InputLabel id="demo-simple-select-filled-label">Country</InputLabel>
-        <Select
-          labelId="demo-simple-select-filled-label"
-          id="demo-simple-select-filled"
-          value={Country}
-          onChange={handleCountryChange}
-        >
-          <MenuItem value="">
-            <em>None</em>
-          </MenuItem>
-          <MenuItem value={"China"}>China</MenuItem>
-          <MenuItem value={"Russia"}>Russia</MenuItem>
-          <MenuItem value={"UK"}>United Kingdom</MenuItem>
-          <MenuItem value={"Indian"}>Indian</MenuItem>
-          <MenuItem value={"Korean"}>Korean</MenuItem>
-          <MenuItem value={"France"}>France</MenuItem>
-          <MenuItem value={"Germany"}>Germany</MenuItem>
-        </Select>
-      </FormControl>
-      <Slider
-        sx={{
-          top: "20px",
-          ml: "5%",
-          width: 220,
-          mb: "10px",
-          display: "block",
-        }}
-        defaultValue={50}
-        aria-label="Default"
-        valueLabelDisplay="auto"
-      />
       <DeckGL
         initialViewState={INITIAL_VIEW_STATE}
         controller={true}
         layers={[layer]}
         style={{
-          left: "20%",
+          left: "5%",
           top: "100px",
-          width: "75%",
-          height: "600px",
-          display: "absolute",
+          width: "90%",
+          height: "550px",
+          position: "absolute",
         }}
         MapProvider
       >
         <Map mapStyle={MAP_STYLE} mapboxAccessToken={MAPBOX_ACCESS_TOKEN}></Map>
+        <Box
+          sx={{
+            paddingRight: "30px",
+            position: "absolute",
+            backgroundColor: "white",
+            height: "550px",
+          }}
+        >
+          <Typography
+            variant="h6"
+            sx={{
+              fontWeight: "700",
+              mb: "10px",
+            }}
+          >
+            Pollutant Reduction
+          </Typography>
+          <FormControl variant="filled" sx={{ minWidth: 220, mb: "10px" }}>
+            <InputLabel id="demo-simple-select-filled-label">
+              Country
+            </InputLabel>
+            <Select
+              labelId="demo-simple-select-filled-label"
+              id="demo-simple-select-filled"
+              value={Country}
+              onChange={handleCountryChange}
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              <MenuItem value={"China"}>China</MenuItem>
+              <MenuItem value={"Russia"}>Russia</MenuItem>
+              <MenuItem value={"UK"}>United Kingdom</MenuItem>
+              <MenuItem value={"Indian"}>Indian</MenuItem>
+              <MenuItem value={"Korean"}>Korean</MenuItem>
+              <MenuItem value={"France"}>France</MenuItem>
+              <MenuItem value={"Germany"}>Germany</MenuItem>
+            </Select>
+          </FormControl>
+          <Slider
+            sx={{
+              width: 220,
+              mb: "10px",
+              display: "block",
+            }}
+            defaultValue={50}
+            aria-label="Default"
+            valueLabelDisplay="auto"
+          />
+        </Box>
       </DeckGL>
     </Box>
   );
