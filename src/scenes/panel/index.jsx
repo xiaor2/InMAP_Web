@@ -89,9 +89,7 @@ const Panel = ({ data }) => {
             Pollutant Reduction
           </Typography>
           <FormControl variant="filled" sx={{ minWidth: 220, mb: "10px" }}>
-            <InputLabel id="demo-simple-select-filled-label">
-              Country
-            </InputLabel>
+            <InputLabel id="demo-simple-select-filled-label">County</InputLabel>
             <Select
               labelId="demo-simple-select-filled-label"
               id="demo-simple-select-filled"
@@ -101,11 +99,11 @@ const Panel = ({ data }) => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value={"Champaign"}>China</MenuItem>
-              <MenuItem value={"Rantoul"}>Russia</MenuItem>
-              <MenuItem value={"Chicago"}>United Kingdom</MenuItem>
-              <MenuItem value={"Springfield"}>Indian</MenuItem>
-              <MenuItem value={"Bloomington"}>Korean</MenuItem>
+              <MenuItem value={"Champaign"}>Champaign</MenuItem>
+              <MenuItem value={"Rantoul"}>Rantoul</MenuItem>
+              <MenuItem value={"Chicago"}>Chicago</MenuItem>
+              <MenuItem value={"Springfield"}>Springfield</MenuItem>
+              <MenuItem value={"Bloomington"}>Bloomington</MenuItem>
             </Select>
           </FormControl>
           <Slider
