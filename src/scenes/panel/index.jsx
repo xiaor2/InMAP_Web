@@ -101,13 +101,11 @@ const Panel = ({ data }) => {
               <MenuItem value="">
                 <em>None</em>
               </MenuItem>
-              <MenuItem value={"China"}>China</MenuItem>
-              <MenuItem value={"Russia"}>Russia</MenuItem>
-              <MenuItem value={"UK"}>United Kingdom</MenuItem>
-              <MenuItem value={"Indian"}>Indian</MenuItem>
-              <MenuItem value={"Korean"}>Korean</MenuItem>
-              <MenuItem value={"France"}>France</MenuItem>
-              <MenuItem value={"Germany"}>Germany</MenuItem>
+              <MenuItem value={"Champaign"}>China</MenuItem>
+              <MenuItem value={"Rantoul"}>Russia</MenuItem>
+              <MenuItem value={"Chicago"}>United Kingdom</MenuItem>
+              <MenuItem value={"Springfield"}>Indian</MenuItem>
+              <MenuItem value={"Bloomington"}>Korean</MenuItem>
             </Select>
           </FormControl>
           <Slider
