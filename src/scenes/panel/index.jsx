@@ -1,0 +1,117 @@
+import React from "react";
+import DeckGL from "@deck.gl/react";
+import { GeoJsonLayer } from "@deck.gl/layers";
+import { Map } from "react-map-gl";
+import Navbar from "scenes/navbar";
+import {
+  Box,
+  // TextField,
+  FormControl,
+  MenuItem,
+  InputLabel,
+  Select,
+  // Button,
+  Slider,
+  Typography,
+} from "@mui/material";
+import "mapbox-gl/dist/mapbox-gl.css";
+
+const MAPBOX_ACCESS_TOKEN =
+  "pk.eyJ1Ijoic2hhd25yYW4xODIiLCJhIjoiY2w5NXRvMDRjMmhhYzN3dDUyOGo0ZmdpeCJ9.RuSR6FInH2tUyctzdnilrw";
+
+const INITIAL_VIEW_STATE = {
+  latitude: 40.0,
+  longitude: -98.0,
+  zoom: 2.5,
+  bearing: 0,
+};
+
+const MAP_STYLE = "mapbox://styles/mapbox/dark-v10";
+
+const Panel = ({ data }) => {
+  const [Country, setCountry] = React.useState("Tons/Year");
+
+  const handleCountryChange = (event) => {
+    setCountry(event.target.value);
+  };
+
+  const [layer, setLayer] = React.useState(
+    new GeoJsonLayer({
+      id: "geojson-layer",
+      data,
+      pickable: true,
+      stroked: false,
+      filled: true,
+      extruded: true,
+      pointType: "circle",
+      lineWidthScale: 20,
+      lineWidthMinPixels: 2,
+      getFillColor: [160, 160, 180, 200],
+      getLineColor: [0, 0, 255, 200],
+      getPointRadius: 100,
+      getLineWidth: 5,
+      getElevation: 30,
+    })
+  );
+
+  return (
+    <Box>
+      <Navbar />
+      <Typography variant="h6" mt={4} ml={11} sx={{ fontWeight: "700" }}>
+        Pollutant Reduction
+      </Typography>
+
+      <FormControl
+        variant="filled"
+        sx={{ top: "20px", ml: "5%", minWidth: 220, mb: "10px" }}
+      >
+        <InputLabel id="demo-simple-select-filled-label">Country</InputLabel>
+        <Select
+          labelId="demo-simple-select-filled-label"
+          id="demo-simple-select-filled"
+          value={Country}
+          onChange={handleCountryChange}
+        >
+          <MenuItem value="">
+            <em>None</em>
+          </MenuItem>
+          <MenuItem value={"China"}>China</MenuItem>
+          <MenuItem value={"Russia"}>Russia</MenuItem>
+          <MenuItem value={"UK"}>United Kingdom</MenuItem>
+          <MenuItem value={"Indian"}>Indian</MenuItem>
+          <MenuItem value={"Korean"}>Korean</MenuItem>
+          <MenuItem value={"France"}>France</MenuItem>
+          <MenuItem value={"Germany"}>Germany</MenuItem>
+        </Select>
+      </FormControl>
+      <Slider
+        sx={{
+          top: "20px",
+          ml: "5%",
+          width: 220,
+          mb: "10px",
+          display: "block",
+        }}
+        defaultValue={50}
+        aria-label="Default"
+        valueLabelDisplay="auto"
+      />
+      <DeckGL
+        initialViewState={INITIAL_VIEW_STATE}
+        controller={true}
+        layers={[layer]}
+        style={{
+          left: "20%",
+          top: "100px",
+          width: "75%",
+          height: "600px",
+          display: "absolute",
+        }}
+        MapProvider
+      >
+        <Map mapStyle={MAP_STYLE} mapboxAccessToken={MAPBOX_ACCESS_TOKEN}></Map>
+      </DeckGL>
+    </Box>
+  );
+};
+export default Panel;
