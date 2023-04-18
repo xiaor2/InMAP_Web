@@ -16,7 +16,7 @@ import {
 import "mapbox-gl/dist/mapbox-gl.css";
 import pollutant from "pollutant.js";
 import { getZarr } from "utils/getZarr.js";
-import { slice } from "https://cdn.skypack.dev/zarr";
+import { slice } from "zarr";
 // import { hexToRgba } from "utils/legend.js";
 // import { colors } from "utils/colors.js";
 
