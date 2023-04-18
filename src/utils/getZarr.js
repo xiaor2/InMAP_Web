@@ -1,4 +1,4 @@
-import { openArray } from "https://cdn.skypack.dev/zarr";
+import { openArray } from "zarr";
 export const getZarr = async (pol) => {
   return await openArray({
     store: "https://inmap-model.s3.us-east-2.amazonaws.com",
