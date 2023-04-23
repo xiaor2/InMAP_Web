@@ -17,6 +17,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import pollutant from "pollutant.js";
 import { getZarr } from "utils/getZarr.js";
 import { slice } from "zarr";
+import useMediaQuery from "@mui/material/useMediaQuery";
 // import { hexToRgba } from "utils/legend.js";
 // import { colors } from "utils/colors.js";
 
@@ -32,18 +33,21 @@ const INITIAL_VIEW_STATE = {
   bearing: 0,
 };
 
+const MOBILE_INITIAL_VIEW_STATE = {
+  latitude: 40.0,
+  longitude: -98.0,
+  zoom: 1,
+  bearing: 0,
+};
+
 const MAP_STYLE = "mapbox://styles/mapbox/dark-v10";
 
 let id = "id";
 let data = pollutant;
 
 const Basemap = () => {
-  // const [SOA_cloud, setSOA_cloud] = React.useState({});
-  // const [pNO3_cloud, setPNO3_cloud] = React.useState({});
-  // const [pNH4_cloud, setPNH4_cloud] = React.useState({});
-  // const [pSO4_cloud, setPSO4_cloud] = React.useState({});
-  // const [PM25_cloud, setPM25_cloud] = React.useState({});
-  // const [data, setData] = React.useState(pollutant);
+  const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
+  const isMinimumScreens = useMediaQuery("(max-width:550px)");
   const [SOA, setSOA] = React.useState(0);
   const [pNO3, setPNO3] = React.useState(0);
   const [pNH4, setPNH4] = React.useState(0);
@@ -52,19 +56,6 @@ const Basemap = () => {
   const [unit, setUnit] = React.useState(0);
   const [location, setLocation] = React.useState(0);
   const [disable, setDisable] = React.useState(false);
-
-  // React.useEffect(() => {
-  //   const get = async (str) => {
-  //     const res = await getZarr(str);
-  //     console.log(res);
-  //     return res;
-  //   };
-  //   setSOA_cloud(get("SOA"));
-  //   setPNO3_cloud(get("pNO3"));
-  //   setPNH4_cloud(get("pNH4"));
-  //   setPSO4_cloud(get("pSO4"));
-  //   setPM25_cloud(get("PrimaryPM25"));
-  // }, []);
 
   const handleUnitChange = (event) => {
     setUnit(event.target.value);
@@ -167,140 +158,297 @@ const Basemap = () => {
   return (
     <Box>
       <Navbar />
-      <DeckGL
-        initialViewState={INITIAL_VIEW_STATE}
-        getTooltip={({ object }) =>
-          object && {
-            html: `<div>TotalPM25: ${
-              Math.round(object.properties.TotalPM25 * 100) / 100
-            } μg/m³</div>`,
-            style: {
-              backgroundColor: "grey",
-              fontSize: "1em",
-              color: "white",
-              padding: "5px",
-            },
-          }
-        }
-        controller={true}
-        layers={[layer]}
-        style={{
-          left: "5%",
-          top: "100px",
-          width: "90%",
-          height: "550px",
-          position: "absolute",
-        }}
-        MapProvider
-      >
-        <Map mapStyle={MAP_STYLE} mapboxAccessToken={MAPBOX_ACCESS_TOKEN}></Map>
-      </DeckGL>
-      <Box
-        sx={{
-          padding: "15px",
-          marginLeft: "5%",
-          position: "absolute",
-          backgroundColor: "white",
-          height: "550px",
-        }}
-      >
-        <Typography
-          variant="h6"
-          sx={{
-            fontWeight: "700",
-            mb: "10px",
-          }}
-        >
-          Place a powerplant
-        </Typography>
-        <TextField
-          id="soa"
-          label="SOA"
-          variant="filled"
-          type="number"
-          sx={{
-            display: "block",
-            mb: "10px",
-          }}
-          value={SOA}
-          onChange={handleSOAChange}
-        />
-        <TextField
-          id="pno3"
-          label="pNO3"
-          variant="filled"
-          type="number"
-          sx={{ display: "block", mb: "10px" }}
-          value={pNO3}
-          onChange={handlepNO3Change}
-        />
-        <TextField
-          id="pnh4"
-          label="pNH4"
-          variant="filled"
-          type="number"
-          sx={{ display: "block", mb: "10px" }}
-          value={pNH4}
-          onChange={handlepNH4Change}
-        />
-        <TextField
-          id="pso4"
-          label="pSO4"
-          variant="filled"
-          type="number"
-          sx={{ display: "block", mb: "10px" }}
-          value={pSO4}
-          onChange={handlepSO4Change}
-        />
-        <TextField
-          id="pm25"
-          label="PM2.5"
-          variant="filled"
-          type="number"
-          sx={{ display: "block", mb: "10px" }}
-          value={PM25}
-          onChange={handlePM25Change}
-        />
-        <FormControl variant="filled" sx={{ minWidth: 220, mb: "10px" }}>
-          <InputLabel id="demo-simple-select-filled-label">Unit</InputLabel>
-          <Select
-            labelId="demo-simple-select-filled-label"
-            id="demo-simple-select-filled"
-            value={unit}
-            onChange={handleUnitChange}
+      {isNonMobileScreens ? (
+        <Box>
+          <DeckGL
+            initialViewState={INITIAL_VIEW_STATE}
+            getTooltip={({ object }) =>
+              object && {
+                html: `<div>TotalPM25: ${
+                  Math.round(object.properties.TotalPM25 * 100) / 100
+                } μg/m³</div>`,
+                style: {
+                  backgroundColor: "grey",
+                  fontSize: "1em",
+                  color: "white",
+                  padding: "5px",
+                },
+              }
+            }
+            controller={true}
+            layers={[layer]}
+            style={{
+              left: "5%",
+              top: "100px",
+              width: "90%",
+              height: "550px",
+              position: "absolute",
+            }}
+            MapProvider
           >
-            <MenuItem value="">
-              <em>None</em>
-            </MenuItem>
-            <MenuItem value={28766.639}>Tons/Year</MenuItem>
-            <MenuItem value={31.7098}>Kilograms/Year</MenuItem>
-            <MenuItem value={1}>Micrograms/Year</MenuItem>
-          </Select>
-        </FormControl>
-        <TextField
-          id="location"
-          label="Grid Number"
-          variant="filled"
-          type="number"
-          sx={{ display: "block", mb: "10px" }}
-          value={location}
-          disabled
-        />
-        <Button
-          size="large"
-          variant="contained"
-          color="success"
-          sx={{
-            display: "block",
-            minWidth: 220,
-            mb: "10px",
-          }}
-          onClick={handleSubmit}
-          disabled={disable}
-        >
-          Apply
-        </Button>
-      </Box>
+            <Map
+              mapStyle={MAP_STYLE}
+              mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
+            ></Map>
+          </DeckGL>
+          <Box
+            sx={{
+              padding: "15px",
+              marginLeft: "5%",
+              position: "absolute",
+              backgroundColor: "white",
+              height: "550px",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: "700",
+                mb: "10px",
+              }}
+            >
+              Place a powerplant
+            </Typography>
+            <TextField
+              id="soa"
+              label="SOA"
+              variant="filled"
+              type="number"
+              sx={{
+                display: "block",
+                mb: "10px",
+              }}
+              value={SOA}
+              onChange={handleSOAChange}
+            />
+            <TextField
+              id="pno3"
+              label="pNO3"
+              variant="filled"
+              type="number"
+              sx={{ display: "block", mb: "10px" }}
+              value={pNO3}
+              onChange={handlepNO3Change}
+            />
+            <TextField
+              id="pnh4"
+              label="pNH4"
+              variant="filled"
+              type="number"
+              sx={{ display: "block", mb: "10px" }}
+              value={pNH4}
+              onChange={handlepNH4Change}
+            />
+            <TextField
+              id="pso4"
+              label="pSO4"
+              variant="filled"
+              type="number"
+              sx={{ display: "block", mb: "10px" }}
+              value={pSO4}
+              onChange={handlepSO4Change}
+            />
+            <TextField
+              id="pm25"
+              label="PM2.5"
+              variant="filled"
+              type="number"
+              sx={{ display: "block", mb: "10px" }}
+              value={PM25}
+              onChange={handlePM25Change}
+            />
+            <FormControl variant="filled" sx={{ minWidth: 220, mb: "10px" }}>
+              <InputLabel id="demo-simple-select-filled-label">Unit</InputLabel>
+              <Select
+                labelId="demo-simple-select-filled-label"
+                id="demo-simple-select-filled"
+                value={unit}
+                onChange={handleUnitChange}
+              >
+                <MenuItem value="">
+                  <em>None</em>
+                </MenuItem>
+                <MenuItem value={28766.639}>Tons/Year</MenuItem>
+                <MenuItem value={31.7098}>Kilograms/Year</MenuItem>
+                <MenuItem value={1}>Micrograms/Year</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              id="location"
+              label="Grid Number"
+              variant="filled"
+              type="number"
+              sx={{ display: "block", mb: "10px" }}
+              value={location}
+              disabled
+            />
+            <Button
+              size="large"
+              variant="contained"
+              color="success"
+              sx={{
+                display: "block",
+                minWidth: 220,
+                mb: "10px",
+              }}
+              onClick={handleSubmit}
+              disabled={disable}
+            >
+              Apply
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        <Box>
+          <DeckGL
+            initialViewState={MOBILE_INITIAL_VIEW_STATE}
+            getTooltip={({ object }) =>
+              object && {
+                html: `<div>TotalPM25: ${
+                  Math.round(object.properties.TotalPM25 * 100) / 100
+                } μg/m³</div>`,
+                style: {
+                  backgroundColor: "grey",
+                  fontSize: "1em",
+                  color: "white",
+                  padding: "5px",
+                },
+              }
+            }
+            controller={true}
+            layers={[layer]}
+            style={{
+              left: "5%",
+              top: isMinimumScreens ? "680px" : "420px",
+              width: "90%",
+              height: "550px",
+              position: "absolute",
+            }}
+            MapProvider
+          >
+            <Map
+              mapStyle={MAP_STYLE}
+              mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
+            ></Map>
+          </DeckGL>
+          <Box
+            sx={{
+              padding: "15px",
+              marginLeft: "5%",
+              position: "absolute",
+              backgroundColor: "white",
+              height: "300px",
+            }}
+          >
+            <Typography
+              variant="h6"
+              sx={{
+                fontWeight: "700",
+                mb: "10px",
+              }}
+            >
+              Place a powerplant
+            </Typography>
+            <Box>
+              <TextField
+                id="soa"
+                label="SOA"
+                variant="filled"
+                type="number"
+                sx={{
+                  mb: "10px",
+                  mr: "10px",
+                }}
+                value={SOA}
+                onChange={handleSOAChange}
+              />
+              <TextField
+                id="pno3"
+                label="pNO3"
+                variant="filled"
+                type="number"
+                sx={{ mb: "10px" }}
+                value={pNO3}
+                onChange={handlepNO3Change}
+              />
+            </Box>
+            <Box>
+              <TextField
+                id="pnh4"
+                label="pNH4"
+                variant="filled"
+                type="number"
+                sx={{ mb: "10px", mr: "10px" }}
+                value={pNH4}
+                onChange={handlepNH4Change}
+              />
+              <TextField
+                id="pso4"
+                label="pSO4"
+                variant="filled"
+                type="number"
+                sx={{ mb: "10px" }}
+                value={pSO4}
+                onChange={handlepSO4Change}
+              />
+            </Box>
+            <Box>
+              <TextField
+                id="pm25"
+                label="PM2.5"
+                variant="filled"
+                type="number"
+                sx={{ mb: "10px", mr: "10px" }}
+                value={PM25}
+                onChange={handlePM25Change}
+              />
+              <FormControl variant="filled" sx={{ minWidth: 220, mb: "10px" }}>
+                <InputLabel id="demo-simple-select-filled-label">
+                  Unit
+                </InputLabel>
+                <Select
+                  labelId="demo-simple-select-filled-label"
+                  id="demo-simple-select-filled"
+                  value={unit}
+                  onChange={handleUnitChange}
+                >
+                  <MenuItem value="">
+                    <em>None</em>
+                  </MenuItem>
+                  <MenuItem value={28766.639}>Tons/Year</MenuItem>
+                  <MenuItem value={31.7098}>Kilograms/Year</MenuItem>
+                  <MenuItem value={1}>Micrograms/Year</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
+            <Box>
+              <TextField
+                id="location"
+                label="Grid Number"
+                variant="filled"
+                type="number"
+                sx={{ mb: "10px", mr: "10px" }}
+                value={location}
+                disabled
+              />
+              <Button
+                size="large"
+                variant="contained"
+                color="success"
+                sx={{
+                  minWidth: 220,
+                  minHeight: 55,
+                  mb: "10px",
+                }}
+                onClick={handleSubmit}
+                disabled={disable}
+              >
+                Apply
+              </Button>
+            </Box>
+          </Box>
+        </Box>
+      )}
     </Box>
   );
 };
