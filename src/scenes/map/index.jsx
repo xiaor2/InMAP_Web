@@ -18,10 +18,8 @@ import pollutant from "pollutant.js";
 import { getZarr } from "utils/getZarr.js";
 import { slice } from "zarr";
 import useMediaQuery from "@mui/material/useMediaQuery";
-// import { hexToRgba } from "utils/legend.js";
-// import { colors } from "utils/colors.js";
-
-// console.log(pollutant);
+import { hexToRgba } from "utils/legend.js";
+import { colors } from "utils/colors.js";
 
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1Ijoic2hhd25yYW4xODIiLCJhIjoiY2w5NXRvMDRjMmhhYzN3dDUyOGo0ZmdpeCJ9.RuSR6FInH2tUyctzdnilrw";
@@ -93,7 +91,15 @@ const Basemap = () => {
     pointType: "circle",
     lineWidthScale: 20,
     lineWidthMinPixels: 2,
-    getFillColor: (data) => [255, 255 * data.properties.TotalPM25, 0, 200],
+    // getFillColor: (data) => [255, 255 * data.properties.TotalPM25, 0, 200],
+    getFillColor: (data) => {
+      let index =
+        Math.round(data.properties.TotalPM25) > 255
+          ? 255
+          : Math.round(data.properties.TotalPM25);
+      let color = hexToRgba(colors[index], 150);
+      return color;
+    },
     getLineColor: [0, 0, 255, 200],
     getPointRadius: 100,
     getLineWidth: 5,
@@ -116,7 +122,6 @@ const Basemap = () => {
     const pNO3_cloud = await getZarr("pNO3");
     const pSO4_cloud = await getZarr("pSO4");
     const PM25_cloud = await getZarr("PrimaryPM25");
-    console.log(typeof location);
     let SOA_curr = await SOA_cloud.get([0, location, slice(null, 52411)]).then(
       async (data) => await data.data
     );
@@ -265,7 +270,7 @@ const Basemap = () => {
                 value={unit}
                 onChange={handleUnitChange}
               >
-                <MenuItem value="">
+                <MenuItem value={0}>
                   <em>None</em>
                 </MenuItem>
                 <MenuItem value={28766.639}>Tons/Year</MenuItem>
