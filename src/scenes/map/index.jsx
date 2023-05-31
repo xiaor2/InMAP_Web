@@ -20,6 +20,8 @@ import { slice } from "zarr";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { hexToRgba } from "utils/legend.js";
 import { colors } from "utils/colors.js";
+import { ReactNotifications, Store } from 'react-notifications-component'
+import 'react-notifications-component/dist/theme.css'
 
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1Ijoic2hhd25yYW4xODIiLCJhIjoiY2w5NXRvMDRjMmhhYzN3dDUyOGo0ZmdpeCJ9.RuSR6FInH2tUyctzdnilrw";
@@ -46,14 +48,15 @@ let data = pollutant;
 const Basemap = () => {
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const isMinimumScreens = useMediaQuery("(max-width:550px)");
-  const [SOA, setSOA] = React.useState(0);
-  const [pNO3, setPNO3] = React.useState(0);
-  const [pNH4, setPNH4] = React.useState(0);
-  const [pSO4, setPSO4] = React.useState(0);
-  const [PM25, setPM25] = React.useState(0);
-  const [unit, setUnit] = React.useState(0);
+  const [SOA, setSOA] = React.useState(0.0);
+  const [pNO3, setPNO3] = React.useState(0.0);
+  const [pNH4, setPNH4] = React.useState(0.0);
+  const [pSO4, setPSO4] = React.useState(0.0);
+  const [PM25, setPM25] = React.useState(0.0);
+  const [unit, setUnit] = React.useState(0.0);
   const [location, setLocation] = React.useState(0);
   const [disable, setDisable] = React.useState(false);
+  let max = 0;
 
   const handleUnitChange = (event) => {
     setUnit(event.target.value);
@@ -93,10 +96,12 @@ const Basemap = () => {
     lineWidthMinPixels: 2,
     // getFillColor: (data) => [255, 255 * data.properties.TotalPM25, 0, 200],
     getFillColor: (data) => {
-      let index =
-        Math.round(data.properties.TotalPM25) > 255
-          ? 255
-          : Math.round(data.properties.TotalPM25);
+      // let index =
+      //   Math.round(data.properties.TotalPM25) > 255
+      //     ? 255
+      //     : Math.round(data.properties.TotalPM25);
+
+      let index = max === 0 ? 0 : Math.round((data.properties.TotalPM25-0)/(max - 0) * 255)
       let color = hexToRgba(colors[index], 150);
       return color;
     },
@@ -116,6 +121,19 @@ const Basemap = () => {
   );
 
   const handleSubmit = async () => {
+    Store.addNotification({
+      title: "Rendering...",
+      message: "Please wait for a few seconds to see the results.",
+      type: "success",
+      insert: "top",
+      container: "top-right",
+      animationIn: ["animate__animated", "animate__fadeIn"],
+      animationOut: ["animate__animated", "animate__fadeOut"],
+      dismiss: {
+        duration: 5000,
+        onScreen: true
+      }
+    });
     setDisable(true);
     const SOA_cloud = await getZarr("SOA");
     const pNH4_cloud = await getZarr("pNH4");
@@ -148,6 +166,11 @@ const Basemap = () => {
           pSO4_curr[i] * pSO4 +
           PM25_curr[i] * PM25);
       data.features[i].properties.TotalPM25 += curr;
+      if (data.features[i].properties.TotalPM25 > max) {
+        console.log(data.features[i].properties.TotalPM25)
+        max = data.features[i].properties.TotalPM25
+        console.log(max)
+      }
     }
     id = id + "1";
     setLayer(
@@ -163,6 +186,7 @@ const Basemap = () => {
   return (
     <Box>
       <Navbar />
+      <ReactNotifications />
       {isNonMobileScreens ? (
         <Box>
           <DeckGL

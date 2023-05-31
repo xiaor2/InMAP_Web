@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import "mapbox-gl/dist/mapbox-gl.css";
 import data from "pollutant.js";
+import { counties } from "counties.js"
 
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1Ijoic2hhd25yYW4xODIiLCJhIjoiY2w5NXRvMDRjMmhhYzN3dDUyOGo0ZmdpeCJ9.RuSR6FInH2tUyctzdnilrw";
@@ -30,10 +31,10 @@ const INITIAL_VIEW_STATE = {
 const MAP_STYLE = "mapbox://styles/mapbox/dark-v10";
 
 const Panel = () => {
-  const [Country, setCountry] = React.useState("Tons/Year");
+  const [County, setCounty] = React.useState(0);
 
-  const handleCountryChange = (event) => {
-    setCountry(event.target.value);
+  const handleCountyChange = (event) => {
+    setCounty(event.target.value);
   };
 
   const [layer, setLayer] = React.useState(
@@ -104,17 +105,15 @@ const Panel = () => {
           <Select
             labelId="demo-simple-select-filled-label"
             id="demo-simple-select-filled"
-            value={Country}
-            onChange={handleCountryChange}
+            value={County}
+            onChange={handleCountyChange}
           >
             <MenuItem value="">
               <em>None</em>
             </MenuItem>
-            <MenuItem value={"Champaign"}>Champaign</MenuItem>
-            <MenuItem value={"Rantoul"}>Rantoul</MenuItem>
-            <MenuItem value={"Chicago"}>Chicago</MenuItem>
-            <MenuItem value={"Springfield"}>Springfield</MenuItem>
-            <MenuItem value={"Bloomington"}>Bloomington</MenuItem>
+            {counties.features.map((feature, i) => {
+              return <MenuItem key={i} value={i}>{feature.properties.NAME}</MenuItem>
+            })}
           </Select>
         </FormControl>
         <Slider
@@ -123,7 +122,7 @@ const Panel = () => {
             mb: "10px",
             display: "block",
           }}
-          defaultValue={50}
+          defaultValue={100}
           aria-label="Default"
           valueLabelDisplay="auto"
         />
