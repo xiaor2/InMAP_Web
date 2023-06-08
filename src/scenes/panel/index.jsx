@@ -1,7 +1,7 @@
 import React from "react";
 import DeckGL from "@deck.gl/react";
 import { GeoJsonLayer } from "@deck.gl/layers";
-import Map, { NavigationControl } from "react-map-gl";
+import Map from "react-map-gl";
 import Navbar from "scenes/navbar";
 import {
   Box,
@@ -10,13 +10,15 @@ import {
   MenuItem,
   InputLabel,
   Select,
-  // Button,
+  Button,
   Slider,
   Typography,
 } from "@mui/material";
 import "mapbox-gl/dist/mapbox-gl.css";
 import data from "pollutant.js";
-import { counties } from "counties.js"
+import { counties } from "counties.js";
+import { hexToRgba } from "utils/legend.js";
+import { colors } from "utils/colors.js";
 
 const MAPBOX_ACCESS_TOKEN =
   "pk.eyJ1Ijoic2hhd25yYW4xODIiLCJhIjoiY2w5NXRvMDRjMmhhYzN3dDUyOGo0ZmdpeCJ9.RuSR6FInH2tUyctzdnilrw";
@@ -30,31 +32,57 @@ const INITIAL_VIEW_STATE = {
 
 const MAP_STYLE = "mapbox://styles/mapbox/dark-v10";
 
+let id = 1;
+
 const Panel = () => {
   const [County, setCounty] = React.useState(0);
+  const [percent, setPercent] = React.useState(100);
 
   const handleCountyChange = (event) => {
     setCounty(event.target.value);
+  };
+
+  const handleSubmit = (event) => {
+    setLayer(
+      new GeoJsonLayer({
+        id,
+        data,
+        ...options,
+      })
+    );
+    id++;
+  };
+
+  const options = {
+    pickable: true,
+    stroked: false,
+    filled: true,
+    extruded: true,
+    pointType: "circle",
+    lineWidthScale: 20,
+    lineWidthMinPixels: 2,
+    getFillColor: () => {
+      let index = Math.round((255 * percent) / 100);
+      let color = hexToRgba(colors[index], 150);
+      return color;
+    },
+    getLineColor: [0, 0, 255, 200],
+    getPointRadius: 100,
+    getLineWidth: 5,
+    getElevation: 30,
   };
 
   const [layer, setLayer] = React.useState(
     new GeoJsonLayer({
       id: "geojson-layer",
       data,
-      pickable: true,
-      stroked: false,
-      filled: true,
-      extruded: true,
-      pointType: "circle",
-      lineWidthScale: 20,
-      lineWidthMinPixels: 2,
-      getFillColor: [160, 160, 180, 200],
-      getLineColor: [0, 0, 255, 200],
-      getPointRadius: 100,
-      getLineWidth: 5,
-      getElevation: 30,
+      ...options,
     })
   );
+
+  const handlePercentChange = (event) => {
+    setPercent(event.target.value);
+  };
 
   return (
     <Box>
@@ -76,9 +104,9 @@ const Panel = () => {
           initialViewState={INITIAL_VIEW_STATE}
           mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
         >
-          <div style={{ margin: 10, position: "absolute", zIndex: 1 }}>
+          {/* <div style={{ margin: 10, position: "absolute", zIndex: 1 }}>
             <NavigationControl />
-          </div>
+          </div> */}
         </Map>
       </DeckGL>
 
@@ -112,20 +140,38 @@ const Panel = () => {
               <em>None</em>
             </MenuItem>
             {counties.features.map((feature, i) => {
-              return <MenuItem key={i} value={i}>{feature.properties.NAME}</MenuItem>
+              return (
+                <MenuItem key={i} value={i}>
+                  {feature.properties.NAME}
+                </MenuItem>
+              );
             })}
           </Select>
         </FormControl>
         <Slider
+          onChange={handlePercentChange}
           sx={{
             width: 220,
             mb: "10px",
             display: "block",
           }}
-          defaultValue={100}
+          defaultValue={percent}
           aria-label="Default"
           valueLabelDisplay="auto"
         />
+        <Button
+          size="large"
+          variant="contained"
+          color="success"
+          sx={{
+            display: "block",
+            minWidth: 220,
+            mb: "10px",
+          }}
+          onClick={handleSubmit}
+        >
+          Apply
+        </Button>
       </Box>
     </Box>
   );
