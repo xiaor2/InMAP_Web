@@ -60,8 +60,9 @@ const Basemap = () => {
   const [unit, setUnit] = React.useState(0.0);
   const [location, setLocation] = React.useState(0);
   const [disable, setDisable] = React.useState(false);
-  // const [marker, setMarker] = React.useState(initialMarker);
+  // const [lable, setLable] = React.useState(initialMarker);
   const [marker, setMarker] = React.useState([]);
+  const [lable, setLable] = React.useState([]);
   let max = 0;
 
   const handleUnitChange = (event) => {
@@ -94,13 +95,23 @@ const Basemap = () => {
 
 
   const handleMarker = (LngLat) => {
-    setMarker((marker) => [...marker, {
+    setMarker({
       latitude: LngLat.coordinate[1],
       longitude: LngLat.coordinate[0]
-    }]);
-    // console.log(marker);
+    });
+    console.log(marker);
     // console.log(LngLat.coordinate);
   };
+
+  // const handleLable = (LngLat) => {
+  //   setMarker((marker) => [...marker, {
+  //     latitude: LngLat.coordinate[1],
+  //     longitude: LngLat.coordinate[0]
+  //   }]);
+  //   console.log(marker);
+  //   console.log(LngLat.coordinate);
+  // };
+
 
   const options = {
     pickable: true,
@@ -198,6 +209,10 @@ const Basemap = () => {
         ...options,
       })
     );
+    setLable((label) => [...label, {
+      latitude: marker.latitude,
+      longitude: marker.longitude
+    }]);
     setDisable(false);
   };
 
@@ -241,13 +256,18 @@ const Basemap = () => {
               mapStyle={MAP_STYLE}
               mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
             >
-              {Array.isArray(marker) ?
-                marker.map((m) => (
-                  <Marker 
-                  longitude={m.longitude}
-                  latitude={m.latitude} />
+              {Array.isArray(lable) ?
+                lable.map((l) => (
+                  <Marker longitude={l.longitude} latitude={l.latitude} anchor="bottom">
+                    <img width="26" height="26" src="https://img.icons8.com/ios-glyphs/30/FAB005/lightning-bolt--v1.png" alt="lightning-bolt--v1"/>
+                  </Marker>
                 ))
-              : null}
+                : null
+              }
+              {marker.longitude !== undefined ?
+                <Marker longitude={marker.longitude} latitude={marker.latitude}/>
+                : null
+              }
             </Map>
           </DeckGL>
           <Box
