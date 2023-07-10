@@ -103,15 +103,6 @@ const Basemap = () => {
     // console.log(LngLat.coordinate);
   };
 
-  // const handleLable = (LngLat) => {
-  //   setMarker((marker) => [...marker, {
-  //     latitude: LngLat.coordinate[1],
-  //     longitude: LngLat.coordinate[0]
-  //   }]);
-  //   console.log(marker);
-  //   console.log(LngLat.coordinate);
-  // };
-
 
   const options = {
     pickable: true,
@@ -202,6 +193,7 @@ const Basemap = () => {
       }
     }
     id = id + "1";
+    console.log(id);
     setLayer(
       new GeoJsonLayer({
         id,
@@ -217,6 +209,27 @@ const Basemap = () => {
   };
 
   const handleReset = async () => {
+    for (let i = 0; i < 52411; i++) {
+      data.features[i].properties.TotalPM25 = 0;
+    }
+    setSOA(0.0);
+    setPNO3(0.0);
+    setPNH4(0,0);
+    setPSO4(0.0);
+    setPM25(0.0);
+    setUnit(0.0);
+    setLocation(0.0);
+    setMarker([]);
+    setLable([]);
+    setLayer(
+      new GeoJsonLayer({
+        id,
+        data,
+        ...options,
+        getFillColor: [0, 0, 0, 150]
+      })
+    );
+    console.log('done');
   };
 
   return (
@@ -259,13 +272,13 @@ const Basemap = () => {
               {Array.isArray(lable) ?
                 lable.map((l) => (
                   <Marker longitude={l.longitude} latitude={l.latitude} anchor="bottom">
-                    <img width="26" height="26" src="https://img.icons8.com/ios-glyphs/30/FAB005/lightning-bolt--v1.png" alt="lightning-bolt--v1"/>
+                    <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/ffffff/lightning-bolt--v1.png" alt="lightning-bolt--v1"/>
                   </Marker>
                 ))
                 : null
               }
               {marker.longitude !== undefined ?
-                <Marker longitude={marker.longitude} latitude={marker.latitude}/>
+                <Marker longitude={marker.longitude} latitude={marker.latitude} color="#ffffff"/>
                 : null
               }
             </Map>
