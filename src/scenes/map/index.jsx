@@ -1,7 +1,7 @@
 import React from "react";
 import DeckGL from "@deck.gl/react";
 import { GeoJsonLayer } from "@deck.gl/layers";
-import { Map } from "react-map-gl";
+import { Map, Marker } from "react-map-gl";
 import Navbar from "scenes/navbar";
 import {
   Box,
@@ -46,6 +46,10 @@ let id = "id";
 let data = pollutant;
 
 const Basemap = () => {
+  // let initialMarker = [
+  //   {latitude: 40, longitude: -100}, 
+  //   {latitude: 40, longitude: -110}
+  // ];
   const isNonMobileScreens = useMediaQuery("(min-width:1000px)");
   const isMinimumScreens = useMediaQuery("(max-width:550px)");
   const [SOA, setSOA] = React.useState(0.0);
@@ -56,6 +60,9 @@ const Basemap = () => {
   const [unit, setUnit] = React.useState(0.0);
   const [location, setLocation] = React.useState(0);
   const [disable, setDisable] = React.useState(false);
+  // const [lable, setLable] = React.useState(initialMarker);
+  const [marker, setMarker] = React.useState([]);
+  const [lable, setLable] = React.useState([]);
   let max = 0;
 
   const handleUnitChange = (event) => {
@@ -85,6 +92,17 @@ const Basemap = () => {
   const handleLocationChange = (event) => {
     setLocation(parseInt(event.object.id));
   };
+
+
+  const handleMarker = (LngLat) => {
+    setMarker({
+      latitude: LngLat.coordinate[1],
+      longitude: LngLat.coordinate[0]
+    });
+    console.log(marker);
+    // console.log(LngLat.coordinate);
+  };
+
 
   const options = {
     pickable: true,
@@ -120,7 +138,9 @@ const Basemap = () => {
     })
   );
 
+
   const handleSubmit = async () => {
+    console.log(unit)
     Store.addNotification({
       title: "Rendering...",
       message: "Please wait for a few seconds to see the results.",
@@ -173,6 +193,7 @@ const Basemap = () => {
       }
     }
     id = id + "1";
+    console.log(id);
     setLayer(
       new GeoJsonLayer({
         id,
@@ -180,7 +201,35 @@ const Basemap = () => {
         ...options,
       })
     );
+    setLable((label) => [...label, {
+      latitude: marker.latitude,
+      longitude: marker.longitude
+    }]);
     setDisable(false);
+  };
+
+  const handleReset = async () => {
+    for (let i = 0; i < 52411; i++) {
+      data.features[i].properties.TotalPM25 = 0;
+    }
+    setSOA(0.0);
+    setPNO3(0.0);
+    setPNH4(0,0);
+    setPSO4(0.0);
+    setPM25(0.0);
+    setUnit(0.0);
+    setLocation(0.0);
+    setMarker([]);
+    setLable([]);
+    setLayer(
+      new GeoJsonLayer({
+        id,
+        data,
+        ...options,
+        getFillColor: [0, 0, 0, 150]
+      })
+    );
+    console.log('done');
   };
 
   return (
@@ -213,12 +262,26 @@ const Basemap = () => {
               height: "550px",
               position: "absolute",
             }}
+            onClick={handleMarker}
             MapProvider
           >
             <Map
               mapStyle={MAP_STYLE}
               mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
-            ></Map>
+            >
+              {Array.isArray(lable) ?
+                lable.map((l) => (
+                  <Marker longitude={l.longitude} latitude={l.latitude} anchor="bottom">
+                    <img width="30" height="30" src="https://img.icons8.com/ios-glyphs/30/ffffff/lightning-bolt--v1.png" alt="lightning-bolt--v1"/>
+                  </Marker>
+                ))
+                : null
+              }
+              {marker.longitude !== undefined ?
+                <Marker longitude={marker.longitude} latitude={marker.latitude} color="#ffffff"/>
+                : null
+              }
+            </Map>
           </DeckGL>
           <Box
             sx={{
@@ -243,10 +306,8 @@ const Basemap = () => {
               label="SOA"
               variant="filled"
               type="number"
-              sx={{
-                display: "block",
-                mb: "10px",
-              }}
+              fullWidth
+              sx={{ display: "block", mb: "10px" }}
               value={SOA}
               onChange={handleSOAChange}
             />
@@ -255,6 +316,7 @@ const Basemap = () => {
               label="pNO3"
               variant="filled"
               type="number"
+              fullWidth
               sx={{ display: "block", mb: "10px" }}
               value={pNO3}
               onChange={handlepNO3Change}
@@ -264,6 +326,7 @@ const Basemap = () => {
               label="pNH4"
               variant="filled"
               type="number"
+              fullWidth
               sx={{ display: "block", mb: "10px" }}
               value={pNH4}
               onChange={handlepNH4Change}
@@ -273,6 +336,7 @@ const Basemap = () => {
               label="pSO4"
               variant="filled"
               type="number"
+              fullWidth
               sx={{ display: "block", mb: "10px" }}
               value={pSO4}
               onChange={handlepSO4Change}
@@ -282,12 +346,13 @@ const Basemap = () => {
               label="PM2.5"
               variant="filled"
               type="number"
+              fullWidth
               sx={{ display: "block", mb: "10px" }}
               value={PM25}
               onChange={handlePM25Change}
             />
             <FormControl variant="filled" sx={{ minWidth: 220, mb: "10px" }}>
-              <InputLabel id="demo-simple-select-filled-label">Unit</InputLabel>
+              <InputLabel id="demo-simple-select-filled-label" required>Unit</InputLabel>
               <Select
                 labelId="demo-simple-select-filled-label"
                 id="demo-simple-select-filled"
@@ -307,6 +372,7 @@ const Basemap = () => {
               label="Grid Number"
               variant="filled"
               type="number"
+              fullWidth
               sx={{ display: "block", mb: "10px" }}
               value={location}
               disabled
@@ -321,9 +387,23 @@ const Basemap = () => {
                 mb: "10px",
               }}
               onClick={handleSubmit}
-              disabled={disable}
+              disabled={unit === 0 || disable}
             >
               Apply
+            </Button>
+            <Button
+              size="large"
+              variant="contained"
+              color="info"
+              sx={{
+                display: "block",
+                minWidth: 220,
+                mb: "10px",
+              }}
+              onClick={handleReset}
+              // disabled={disable}
+            >
+              Reset
             </Button>
           </Box>
         </Box>
@@ -481,4 +561,5 @@ const Basemap = () => {
     </Box>
   );
 };
+
 export default Basemap;
