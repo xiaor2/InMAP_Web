@@ -64,7 +64,10 @@ const Basemap = () => {
   // const [lable, setLable] = React.useState(initialMarker);
   const [marker, setMarker] = React.useState([]);
   const [lable, setLable] = React.useState([]);
-  const [total, setTotal] = React.useState(0.0);
+  const [total, setTotal] = React.useState(0.0);    // Total concentration of PM2.5
+  const [PWAvg, setPWAvg] = React.useState(0.0);    // Population-weighted Average concentration of PM2.5
+  const [deathsK, setDeathsK] = React.useState(0.0);    // Total number of deaths
+  const [deathsL, setDeathsL] = React.useState(0.0);    // Assume a 14% increase in morality rate for every 10 μg/m³ increase in PM2.5 concentration
   let max = 0;
 
   const handleUnitChange = (event) => {
@@ -157,14 +160,22 @@ const Basemap = () => {
       }
     });
     setDisable(true);
+
     const SOA_cloud = await getZarr("SOA");
+    console.log("SOA", SOA_cloud);
     const pNH4_cloud = await getZarr("pNH4");
     const pNO3_cloud = await getZarr("pNO3");
     const pSO4_cloud = await getZarr("pSO4");
     const PM25_cloud = await getZarr("PrimaryPM25");
-    let SOA_curr = await SOA_cloud.get([0, location, slice(null, 52411)]).then(
-      async (data) => await data.data
-    );
+    console.log("PM25", PM25_cloud);
+    const Pop_could = await getZarr("TotalPop");
+    console.log("population", Pop_could);
+    const MR_could = await getZarr("MortalityRate");
+    console.log("death", MR_could);
+
+    let SOA_curr = await SOA_cloud
+      .get([0, location, slice(null, 52411)])
+      .then(async (data) => await data.data);
     let pNO3_curr = await pNO3_cloud
       .get([0, location, slice(null, 52411)])
       .then(async (data) => await data.data);
@@ -174,11 +185,23 @@ const Basemap = () => {
     let pSO4_curr = await pSO4_cloud
       .get([0, location, slice(null, 52411)])
       .then(async (data) => await data.data);
-    let PM25_curr = await PM25_cloud.get([
-      0,
-      location,
-      slice(null, 52411),
-    ]).then(async (data) => await data.data);
+    let PM25_curr = await PM25_cloud
+      .get([0, location, slice(null, 52411),])
+      .then(async (data) => await data.data);
+    let Pop_curr = await Pop_could
+      .get([slice(null, 52411),])
+      .then(async (data) => await data.data);
+    console.log("pop", Pop_curr);
+    let MR_curr = await MR_could
+      .get([slice(null, 52411),])
+      .then(async (data) => await data.data);
+    console.log("death", MR_curr);
+
+    let tmpTotal = 0;
+    let weightedSum = 0;
+    let totalPop = 0;
+    let tmpDsk = 0;
+    let tmpDsL = 0;
     for (let i = 0; i < 52411; i++) {
       let curr =
         unit *
@@ -187,16 +210,26 @@ const Basemap = () => {
           pNH4_curr[i] * pNH4 +
           pSO4_curr[i] * pSO4 +
           PM25_curr[i] * PM25);
+      
       data.features[i].properties.TotalPM25 += curr;
-      setTotal(parseFloat(total) + parseFloat(PM25));
-      // total += PM25;
-      console.log("TotalPM25: " + data.features[i].properties.TotalPM25);
+      tmpTotal += data.features[i].properties.TotalPM25;
+      totalPop += Pop_curr[i];
+      // console.log("population/grid: " + Pop_curr[i]);
+      weightedSum += data.features[i].properties.TotalPM25 * Pop_curr[i];
+      tmpDsk += (Math.exp(Math.log(1.06)/10 * curr) - 1) * Pop_curr[i] * 1.0465819687408728 * MR_curr[i] / 100000 * 1.025229357798165;
+      tmpDsL += (Math.exp(Math.log(1.14)/10 * curr) - 1) * Pop_curr[i] * 1.0465819687408728 * MR_curr[i] / 100000 * 1.025229357798165;
+
       if (data.features[i].properties.TotalPM25 > max) {
-        console.log(data.features[i].properties.TotalPM25)
-        max = data.features[i].properties.TotalPM25
-        console.log("max"+max)
+        console.log(data.features[i].properties.TotalPM25);
+        max = data.features[i].properties.TotalPM25;
+        console.log("max", max);
       }
     }
+    setTotal(total+tmpTotal);
+    setPWAvg(weightedSum/totalPop);
+    setDeathsK(deathsK+tmpDsk);
+    setDeathsL(deathsL+tmpDsL);
+    console.log("population sum",totalPop)
     id = id + "1";
     console.log(id);
     setLayer(
@@ -227,6 +260,9 @@ const Basemap = () => {
     setMarker([]);
     setLable([]);
     setTotal(0.0);
+    setPWAvg(0.0);
+    setDeathsK(0.0);
+    setDeathsL(0.0);
     id = id + "1";
     setLayer(
       new GeoJsonLayer({
@@ -238,7 +274,6 @@ const Basemap = () => {
     );
     console.log('done');
   };
-
   
   return (
     <Box>
@@ -251,7 +286,7 @@ const Basemap = () => {
             getTooltip={({ object }) =>
               object && {
                 html: `<div>TotalPM2.5: ${
-                  Math.round(object.properties.TotalPM25 * 10000)
+                  (object.properties.TotalPM25).toPrecision(3)
                 } μg/m³</div>`,
                 style: {
                   backgroundColor: "grey",
@@ -286,7 +321,7 @@ const Basemap = () => {
                 : null
               }
               {marker.longitude !== undefined ?
-                <Marker longitude={marker.longitude} latitude={marker.latitude}/>
+                <Marker longitude={marker.longitude} latitude={marker.latitude} color="Gainsboro"/>
                 : null
               }
             </Map>
@@ -421,7 +456,8 @@ const Basemap = () => {
               top: "140px",
               position: "absolute",
               backgroundColor: "white",
-              height: "20px",
+              height: "110px",
+              lineHeight: 1.7,
               boxShadow: 3,
               opacity: [0.9, 0.8, 0.8],
               borderRadius: 1,
@@ -437,8 +473,12 @@ const Basemap = () => {
                 color: "dark-grey",
                 mb: "10px",
               }}
+              display="block"
             >
-              Total PM2.5 concentration: {total} μg/m³
+              ▪ Total PM2.5 concentration: {total.toPrecision(4)} μg/m³<br/>
+              ▪ Population-Weighted average PM2.5: {PWAvg.toPrecision(4)} μg/m³<br/>
+              ▪ Total Number of Death (6%↑): {deathsK.toPrecision(4)}<br/>
+              ▪ Total Number of Death (14%↑): {deathsL.toPrecision(4)}<br/>
             </Typography>
           </Box>
         </Box>
